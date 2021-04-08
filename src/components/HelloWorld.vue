@@ -6,7 +6,7 @@
         {{ item }}
       </li>
     </ul>
-    <input v-on:keyup.enter="func" autofocus="true">
+    <input v-on:keyup.enter="executeCommand" autofocus="true">
   </div>
 </template>
 
@@ -19,18 +19,37 @@ export default {
   data() {
     return {
       output: "",
-      outputArray: []
+      outputArray: [],
+      commands: {
+        clear: () => {
+          this.outputArray = [];
+        },
+        add: (x, y) => {
+          return parseInt(x) + parseInt(y);
+        },
+        echo: (...x) => {
+          console.log(x);
+          return x.join(' ');
+        }
+      }
     }
   },
   methods: {
-    func(event) {
-      const input = event.target;
-      if(input.value == "clear") {
-        this.outputArray = [];
+    executeCommand(event) {
+      const commandArray = event.target.value.split(' ');
+      const command = commandArray.shift();
+      const args = commandArray;
+      let outputString;
+      if(this.commands[command]){
+        outputString = this.commands[command](...args);
       } else {
-        this.outputArray.push(input.value);
-      } 
-      input.value = "";
+        outputString = `Command ${command} not found `;
+      }
+      this.displayOutput(outputString);
+      event.target.value = "";
+    },
+    displayOutput(outputString) {
+      if(outputString) this.outputArray.push(outputString);
     }
   }
 }
